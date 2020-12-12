@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useReducer, useMemo } from 'react'
+import React, { useState, useEffect, useContext, useReducer, useMemo, useRef } from 'react'
 import ThemeContext from '../context/ThemeContext';
 
 const initialState = {
@@ -22,6 +22,8 @@ const Characters = () => {
     const [favorites, dispatch] = useReducer(favoriteReducer, initialState);
     const [search, setSearch] = useState('');
     
+    const searchInput = useRef(null);
+    
     useEffect(() => {
         fetch('https://rickandmortyapi.com/api/character/')
         .then(response => response.json())
@@ -33,9 +35,14 @@ const Characters = () => {
         dispatch({ type: 'ADD_TO_FAVORITE', payload: favorite })
     }
 
-    const handleSearch = event => {
-        setSearch(event.target.value)
-    }
+    // const handleSearch = event => {
+    //     setSearch(event.target.value);
+    // }
+
+    // using useRef
+    const handleSearch = () => {
+        setSearch(searchInput.current.value);
+    } 
 
     // const filteredCharacters = characters.filter((char) => {
     //     return char.name.toLowerCase().includes(search.toLowerCase());
@@ -59,7 +66,7 @@ const Characters = () => {
             ))}
 
             <div className="Search">
-                <input type="text" value={search} onChange={handleSearch} />
+                <input type="text" value={search} ref={searchInput} onChange={handleSearch} />
             </div>
 
             <ul style={styles.listItems}>
