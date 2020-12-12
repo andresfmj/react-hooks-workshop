@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useContext, useReducer, useMemo, useRef } from 'react'
+import React, { useState, useContext, useReducer, useMemo, useRef, useCallback } from 'react'
 import ThemeContext from '../context/ThemeContext';
+import useCharacters from '../hooks/useCharacters';
+import Search from './Search';
 
 const initialState = {
     favorites: []
 }
+
+const API_URL = 'https://rickandmortyapi.com/api/character/';
 
 const favoriteReducer = (state, action) => {
     if (action.type == 'ADD_TO_FAVORITE') {
@@ -17,19 +21,13 @@ const favoriteReducer = (state, action) => {
 }
 
 const Characters = () => {
-    const [characters, setCharacters] = useState([]);
     const { theme, setTheme } = useContext(ThemeContext);
     const [favorites, dispatch] = useReducer(favoriteReducer, initialState);
     const [search, setSearch] = useState('');
     
     const searchInput = useRef(null);
     
-    useEffect(() => {
-        fetch('https://rickandmortyapi.com/api/character/')
-        .then(response => response.json())
-        .then(data => setCharacters(data.results))
-
-    }, []);
+    const characters = useCharacters(API_URL);
 
     const handleClicked = favorite => {
         dispatch({ type: 'ADD_TO_FAVORITE', payload: favorite })
@@ -40,9 +38,14 @@ const Characters = () => {
     // }
 
     // using useRef
-    const handleSearch = () => {
-        setSearch(searchInput.current.value);
-    } 
+    // const handleSearch = () => {
+    //     setSearch(searchInput.current.value);
+    // } 
+
+    // using useCallback
+    const handleSearch = useCallback(() => {
+        setSearch(searchInput.current.value)
+    }, [])
 
     // const filteredCharacters = characters.filter((char) => {
     //     return char.name.toLowerCase().includes(search.toLowerCase());
@@ -65,9 +68,11 @@ const Characters = () => {
                 </li>
             ))}
 
-            <div className="Search">
-                <input type="text" value={search} ref={searchInput} onChange={handleSearch} />
-            </div>
+            <Search 
+                search={search} 
+                searchInput={searchInput} 
+                handleSearch={handleSearch} 
+            />
 
             <ul style={styles.listItems}>
                 {filteredCharacters.map(char => (
