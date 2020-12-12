@@ -1,10 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useReducer } from 'react'
 import ThemeContext from '../context/ThemeContext';
 
+const initialState = {
+    favorites: []
+}
+
+const favoriteReducer = (state, action) => {
+    if (action.type == 'ADD_TO_FAVORITE') {
+        return {
+            ...state,
+            favorites: [...state.favorites, action.payload]
+        };
+    }
+
+    return state;
+}
 
 const Characters = () => {
     const [characters, setCharacters] = useState([]);
     const { theme, setTheme } = useContext(ThemeContext);
+    const [favorites, dispatch] = useReducer(favoriteReducer, initialState);
     
     useEffect(() => {
         fetch('https://rickandmortyapi.com/api/character/')
@@ -13,14 +28,26 @@ const Characters = () => {
 
     }, []);
 
+    const handleClicked = favorite => {
+        dispatch({ type: 'ADD_TO_FAVORITE', payload: favorite })
+    }
+
     return (
         <div className="Characters">
+
+            {favorites.favorites.map(fav => (
+                <li key={fav.id}>
+                    {fav.name}
+                </li>
+            ))}
+
             <ul style={styles.listItems}>
                 {characters.map(char => (
                     <li key={char.id} style={styles.items} style={theme ? styles.textColorDarkMode : null}>
                         <div style={styles.card}>
                             <img src={char.image} alt={char.name} />
                             <p>{char.name}</p>
+                            <button type='button' onClick={() => handleClicked(char)}>Agregar a favoritos</button>
                         </div>
                     </li>
                 ))}
