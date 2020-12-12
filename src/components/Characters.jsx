@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useReducer } from 'react'
+import React, { useState, useEffect, useContext, useReducer, useMemo } from 'react'
 import ThemeContext from '../context/ThemeContext';
 
 const initialState = {
@@ -20,6 +20,7 @@ const Characters = () => {
     const [characters, setCharacters] = useState([]);
     const { theme, setTheme } = useContext(ThemeContext);
     const [favorites, dispatch] = useReducer(favoriteReducer, initialState);
+    const [search, setSearch] = useState('');
     
     useEffect(() => {
         fetch('https://rickandmortyapi.com/api/character/')
@@ -32,6 +33,22 @@ const Characters = () => {
         dispatch({ type: 'ADD_TO_FAVORITE', payload: favorite })
     }
 
+    const handleSearch = event => {
+        setSearch(event.target.value)
+    }
+
+    // const filteredCharacters = characters.filter((char) => {
+    //     return char.name.toLowerCase().includes(search.toLowerCase());
+    // })
+
+    const filteredCharacters = useMemo(() => 
+        characters.filter((char) => {
+            return char.name.toLowerCase().includes(search.toLowerCase());
+        }),
+        [characters, search]
+    )
+
+
     return (
         <div className="Characters">
 
@@ -41,8 +58,12 @@ const Characters = () => {
                 </li>
             ))}
 
+            <div className="Search">
+                <input type="text" value={search} onChange={handleSearch} />
+            </div>
+
             <ul style={styles.listItems}>
-                {characters.map(char => (
+                {filteredCharacters.map(char => (
                     <li key={char.id} style={styles.items} style={theme ? styles.textColorDarkMode : null}>
                         <div style={styles.card}>
                             <img src={char.image} alt={char.name} />
